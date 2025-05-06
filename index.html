@@ -23,7 +23,7 @@
         />
         <input type="text" id="itemName" placeholder="Item name" />
         <input type="number" id="itemPrice" placeholder="Price" />
-        <button onclick="addItem()">Add Item</button>
+        <button onclick="addItem()">Pridėti prekę</button>
       </div>
 
       <div id="userSection" style="display: none">
@@ -32,14 +32,14 @@
           id="searchInput"
           placeholder="Enter barcode or name"
         />
-        <button onclick="searchItem()">Search</button>
+        <button onclick="searchItem()">Ieškoti prekės</button>
         <div id="result"></div>
       </div>
     </div>
 
     <script>
       const sheetURL =
-        "https://script.google.com/macros/s/AKfycbypAkPa0Jf_-qmYtWSlxhChrfAwzEHDrmY1RtfvqlBcobyEA40g9Oi15S9kibJ4QJi8/exec";
+        "https://script.google.com/macros/s/AKfycbwnAMvT1rn00wr3BY2ci5GMml0BzrnCkawQPI1Q9IWl-Icy0eWmaZFMK5afnsfg0KLb/exec";
 
       function switchMode() {
         const mode = document.getElementById("mode").value;
@@ -59,6 +59,13 @@
           alert("All fields are required.");
           return;
         }
+
+        console.log("Sending request:", {
+          mode: "add",
+          barcode: barcode,
+          name: name,
+          price: price,
+        });
 
         fetch(sheetURL, {
           method: "POST",
