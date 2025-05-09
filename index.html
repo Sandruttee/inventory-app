@@ -39,7 +39,7 @@
 
     <script>
       const sheetURL =
-        "https://script.google.com/macros/s/AKfycbwEvo7xli9byK44bbLolgZG9u5pDdq_sihXHYy9eP5ZRtcO4SjggQYM7fcghFWy6nl7/exec";
+        "https://script.google.com/macros/s/AKfycbwsVdj25MCmX9_rU0QHZiy4I4ihNs9RtjzRrwQf6u1Z3CA-1KiNGGC1k9BXCh5WCw/exec";
 
       function switchMode() {
         const mode = document.getElementById("mode").value;
@@ -60,24 +60,15 @@
           return;
         }
 
-        console.log("Sending request:", {
-          mode: "add",
-          barcode: barcode,
-          name: name,
-          price: price,
-        });
-
         fetch(sheetURL, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             mode: "add",
             barcode: barcode,
             name: name,
             price: price,
           }),
-          headers: {
-            "Content-Type": "application/json",
-          },
         })
           .then((res) => res.text())
           .then((msg) => alert(msg))
@@ -91,18 +82,20 @@
           return;
         }
 
-        fetch(`${sheetURL}?search=${encodeURIComponent(input)}`)
+        const url = `${sheetURL}?search=${encodeURIComponent(input)}`;
+
+        fetch(url)
           .then((res) => res.json())
           .then((data) => {
             const resultBox = document.getElementById("result");
-            if (data) {
-              resultBox.innerHTML = `
-              <strong>Barcode:</strong> ${data.barcode}<br>
-              <strong>Name:</strong> ${data.name}<br>
-              <strong>Price:</strong> ${data.price}
-            `;
+            if (data.message) {
+              resultBox.innerHTML = data.message; // Show error message if item not found
             } else {
-              resultBox.innerHTML = "Item not found.";
+              resultBox.innerHTML = `
+          <strong>Barcode:</strong> ${data.barcode}<br>
+          <strong>Name:</strong> ${data.name}<br>
+          <strong>Price:</strong> ${data.price}
+        `;
             }
             resultBox.style.display = "block";
           })
