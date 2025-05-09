@@ -4,51 +4,47 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inventory App</title>
-    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 20px;
+        max-width: 600px;
+        background: #f4f4f4;
+      }
+      input,
+      button {
+        margin-bottom: 10px;
+        padding: 10px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      #result {
+        margin-top: 20px;
+        padding: 10px;
+        background: #fff;
+        border: 1px solid #ccc;
+      }
+    </style>
   </head>
   <body>
-    <div class="container">
-      <h2>Inventory App</h2>
+    <h2>Inventory App</h2>
 
-      <select id="mode" onchange="switchMode()">
-        <option value="admin">Admin</option>
-        <option value="user">User</option>
-      </select>
+    <h3>Add Item</h3>
+    <input type="text" id="adminBarcode" placeholder="Barcode" />
+    <input type="text" id="itemName" placeholder="Item Name" />
+    <input type="number" id="itemPrice" placeholder="Price" />
+    <button onclick="addItem()">Add Item</button>
 
-      <div id="adminSection">
-        <input
-          type="text"
-          id="adminBarcode"
-          placeholder="Scan or enter barcode"
-        />
-        <input type="text" id="itemName" placeholder="Item name" />
-        <input type="number" id="itemPrice" placeholder="Price" />
-        <button onclick="addItem()">Pridėti prekę</button>
-      </div>
+    <h3>Search Item</h3>
+    <input type="text" id="searchInput" placeholder="Enter barcode or name" />
+    <button onclick="searchItem()">Search Item</button>
 
-      <div id="userSection" style="display: none">
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Enter barcode or name"
-        />
-        <button onclick="searchItem()">Ieškoti prekės</button>
-        <div id="result"></div>
-      </div>
-    </div>
+    <div id="result"></div>
 
     <script>
       const sheetURL =
-        "https://script.google.com/macros/s/AKfycbwsVdj25MCmX9_rU0QHZiy4I4ihNs9RtjzRrwQf6u1Z3CA-1KiNGGC1k9BXCh5WCw/exec";
-
-      function switchMode() {
-        const mode = document.getElementById("mode").value;
-        document.getElementById("adminSection").style.display =
-          mode === "admin" ? "block" : "none";
-        document.getElementById("userSection").style.display =
-          mode === "user" ? "block" : "none";
-        document.getElementById("result").style.display = "none";
-      }
+        "https://script.google.com/macros/s/AKfycbycNmD6H157Ybc-6T9phAeL3exh9Cf4lagqRdFfFTXZLArnnN6SWQFOf6OqGO2dYTzA/exec"; // Replace with your Google Apps Script URL
 
       function addItem() {
         const barcode = document.getElementById("adminBarcode").value.trim();
@@ -70,8 +66,8 @@
             price: price,
           }),
         })
-          .then((res) => res.text())
-          .then((msg) => alert(msg))
+          .then((res) => res.json())
+          .then((msg) => alert(msg.message))
           .catch((err) => alert("Error: " + err));
       }
 
@@ -87,17 +83,18 @@
         fetch(url)
           .then((res) => res.json())
           .then((data) => {
-            const resultBox = document.getElementById("result");
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = ""; // Clear previous results
+
             if (data.message) {
-              resultBox.innerHTML = data.message; // Show error message if item not found
+              resultDiv.innerHTML = data.message; // Show error message if item not found
             } else {
-              resultBox.innerHTML = `
-          <strong>Barcode:</strong> ${data.barcode}<br>
-          <strong>Name:</strong> ${data.name}<br>
-          <strong>Price:</strong> ${data.price}
-        `;
+              resultDiv.innerHTML = `
+        <strong>Barcode:</strong> ${data.barcode}<br>
+        <strong>Name:</strong> ${data.name}<br>
+        <strong>Price:</strong> ${data.price}
+      `;
             }
-            resultBox.style.display = "block";
           })
           .catch((err) => alert("Search error: " + err));
       }
