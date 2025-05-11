@@ -3,20 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Inventory App</title>
+    <title>Kaštono parduotuvė</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <h2>Inventory App</h2>
+    <h2>Kaštono parduotuvė</h2>
 
     <!-- Login Button -->
-    <button id="loginButton" onclick="toggleLoginForm()">Login</button>
+    <button id="loginButton" onclick="toggleLoginForm()">Prisijungimas</button>
 
     <!-- User Section (Search) -->
     <div id="userSection">
-      <h3>Search Item</h3>
-      <input type="text" id="searchInput" placeholder="Enter barcode or name" />
-      <button onclick="searchItem()">Search</button>
+      <h3>Prekių paieška</h3>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Įveskite barkodą arba prekės pavadinimą"
+      />
+      <button onclick="searchItem()">Ieškoti prekių</button>
       <div id="result"></div>
     </div>
 
@@ -24,7 +28,7 @@
 
     <!-- View Inventory Button -->
     <button id="viewInventoryButton" onclick="viewInventory()">
-      View Inventory
+      Peržiūrėti visą prekių sąrašą
     </button>
 
     <!-- Inventory List (Initially Hidden) -->
@@ -32,13 +36,15 @@
 
     <!-- Admin Login Form (Initially Hidden) -->
     <div id="adminLogin">
-      <h3>Admin Login</h3>
+      <h3>Sveiki, Evaldai - prisijunkite, kad galėtumėte pridėti prekes</h3>
       <input
         type="password"
         id="adminPassword"
-        placeholder="Enter admin password"
+        placeholder="Įveskite savo slaptažodį"
       />
-      <button onclick="checkAdminPassword()">Login</button>
+      <button onclick="checkAdminPassword()">
+        Paspauskite, kad prisijungtumėte
+      </button>
       <div id="adminLoginMessage"></div>
     </div>
 
@@ -48,7 +54,7 @@
       <input type="text" id="adminBarcode" placeholder="Barcode" />
       <input type="text" id="itemName" placeholder="Item Name" />
       <input type="number" step="0.01" id="itemPrice" placeholder="Price" />
-      <button onclick="addItem()">Add Item</button>
+      <button onclick="addItem()">Pridėti prekę</button>
     </div>
 
     <script>
