@@ -44,7 +44,7 @@
 
     <script>
       const sheetURL =
-        "https://script.google.com/macros/s/AKfycbycNmD6H157Ybc-6T9phAeL3exh9Cf4lagqRdFfFTXZLArnnN6SWQFOf6OqGO2dYTzA/exec"; // Replace with your Google Apps Script URL
+        "https://script.google.com/macros/s/AKfycbzu3-CbcKUtK-umaQcZcVU_gXUZx7FdmtV6M2-5q2UltQEYXzNA1i708Od-I_hUrFNg/exec"; // Replace with your deployed Apps Script URL
 
       function addItem() {
         const barcode = document.getElementById("adminBarcode").value.trim();
@@ -87,13 +87,11 @@
             resultDiv.innerHTML = ""; // Clear previous results
 
             if (data.message) {
-              resultDiv.innerHTML = data.message; // Show error message if item not found
+              resultDiv.textContent = data.message;
             } else {
-              resultDiv.innerHTML = `
-        <strong>Barcode:</strong> ${data.barcode}<br>
-        <strong>Name:</strong> ${data.name}<br>
-        <strong>Price:</strong> ${data.price}
-      `;
+              resultDiv.innerHTML = `<strong>Barcode:</strong> ${data.barcode}<br>
+             <strong>Name:</strong> ${data.name}<br>
+             <strong>Price:</strong> ${data.price}`;
             }
           })
           .catch((err) => alert("Search error: " + err));
