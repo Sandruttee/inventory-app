@@ -9,7 +9,6 @@
   <body>
     <h2>Kaštono parduotuvė</h2>
 
-    <!-- Login Button -->
     <button id="loginButton" onclick="toggleLoginForm()">Prisijungimas</button>
 
     <!-- User Section (Search) -->
@@ -50,10 +49,15 @@
 
     <!-- Admin Section (Hidden Initially) -->
     <div id="adminSection" style="display: none">
-      <h3>Add New Item</h3>
-      <input type="text" id="adminBarcode" placeholder="Barcode" />
-      <input type="text" id="itemName" placeholder="Item Name" />
-      <input type="number" step="0.01" id="itemPrice" placeholder="Price" />
+      <h3>Pridėti naują prekę</h3>
+      <input type="text" id="adminBarcode" placeholder="Barkodas" />
+      <input type="text" id="itemName" placeholder="Prekės pavadinimas" />
+      <input
+        type="number"
+        step="0.01"
+        id="itemPrice"
+        placeholder="Prekės kaina"
+      />
       <button onclick="addItem()">Pridėti prekę</button>
     </div>
 
@@ -67,7 +71,7 @@
         const price = document.getElementById("itemPrice").value.trim();
 
         if (!barcode || !name || !price) {
-          alert("All fields are required.");
+          alert("Reikia užpildyti visus laukelius");
           return;
         }
 
@@ -83,18 +87,18 @@
         })
           .then((res) => res.json())
           .then((msg) => {
-            const message = `Items added:\n- Barcode: ${barcode}\n- Name: ${name}\n- Price: $${parseFloat(
+            const message = `Prekė pridėta:\n- Barkodas: ${barcode}\n- Prekės pavadinimas: ${name}\n- Prekės kainas: $${parseFloat(
               price
             ).toFixed(2)}`;
             alert(message);
           })
-          .catch((err) => alert("Error: " + err));
+          .catch((err) => alert("Įvyko klaida: " + err));
       }
 
       function searchItem() {
         const input = document.getElementById("searchInput").value.trim();
         if (!input) {
-          alert("Enter something to search.");
+          alert("Užpildykite paieškos laukelį");
           return;
         }
 
@@ -109,16 +113,16 @@
             if (data.message) {
               resultDiv.textContent = data.message;
             } else {
-              resultDiv.innerHTML = `<strong>Barcode:</strong> ${
+              resultDiv.innerHTML = `<strong>Barkodas:</strong> ${
                 data.barcode
-              }<br><strong>Name:</strong> ${
+              }<br><strong>Prekės pavadinimas:</strong> ${
                 data.name
-              }<br><strong>Price:</strong> $${parseFloat(data.price).toFixed(
-                2
-              )}`;
+              }<br><strong>Prekės kaina:</strong> $${parseFloat(
+                data.price
+              ).toFixed(2)}`;
             }
           })
-          .catch((err) => alert("Search error: " + err));
+          .catch((err) => alert("Įvyko klaida: " + err));
       }
       function viewInventory() {
         // Use an empty search parameter to fetch all items
@@ -138,20 +142,20 @@
               data.forEach((item) => {
                 const itemDiv = document.createElement("div");
                 itemDiv.classList.add("inventoryItem");
-                itemDiv.innerHTML = `<strong>Barcode:</strong> ${
+                itemDiv.innerHTML = `<strong>Barkodas:</strong> ${
                   item.barcode
-                }<br><strong>Name:</strong> ${
+                }<br><strong>Prekės pavadinimas:</strong> ${
                   item.name
-                }<br><strong>Price:</strong> $${parseFloat(item.price).toFixed(
-                  2
-                )}`;
+                }<br><strong>Prekės kaina:</strong> $${parseFloat(
+                  item.price
+                ).toFixed(2)}`;
                 inventoryListDiv.appendChild(itemDiv);
               });
             } else {
-              inventoryListDiv.textContent = "No items in the inventory.";
+              inventoryListDiv.textContent = "Nėra jokių pridėtų prekių";
             }
           })
-          .catch((err) => alert("Error fetching inventory: " + err));
+          .catch((err) => alert("Įvyko klaida: " + err));
       }
 
       function checkAdminPassword() {
@@ -165,7 +169,8 @@
           document.getElementById("adminLogin").style.display = "none";
           message.textContent = "";
         } else {
-          message.textContent = "Incorrect password. Try again.";
+          message.textContent =
+            "Neteisingas slaptažodis. Pabandykite dar kartą.";
           message.style.color = "red";
         }
       }
