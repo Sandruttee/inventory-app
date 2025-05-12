@@ -23,10 +23,16 @@ function addItem() {
   })
     .then((res) => res.json())
     .then((msg) => {
-      const message = `Prekė pridėta:\n- Barkodas: ${barcode}\n- Prekės pavadinimas: ${name}\n- Prekės kainas: $${parseFloat(
-        price
-      ).toFixed(2)}`;
-      alert(message);
+      const resultDiv = document.getElementById("newItemDisplay");
+      resultDiv.innerHTML = `<h3>Prekė sėkmingai pridėta:</h3>
+        <strong>Barkodas:</strong> ${barcode}<br>
+        <strong>Prekės pavadinimas:</strong> ${name}<br>
+        <strong>Prekės kaina:</strong> $${parseFloat(price).toFixed(2)}
+      `;
+
+      document.getElementById("adminBarcode").value = "";
+      document.getElementById("itemName").value = "";
+      document.getElementById("itemPrice").value = "";
     })
     .catch((err) => alert("Įvyko klaida: " + err));
 }
@@ -61,7 +67,6 @@ function searchItem() {
     .catch((err) => alert("Įvyko klaida: " + err));
 }
 function viewInventory() {
-  // Use an empty search parameter to fetch all items
   const url = `${sheetURL}?search=`;
 
   fetch(url)
@@ -70,10 +75,8 @@ function viewInventory() {
       const inventoryListDiv = document.getElementById("inventoryList");
       inventoryListDiv.innerHTML = "";
 
-      // Log the response to inspect the data structure
       console.log(data);
 
-      // If data is an array of items, display each item
       if (Array.isArray(data) && data.length > 0) {
         data.forEach((item) => {
           const itemDiv = document.createElement("div");
@@ -102,6 +105,8 @@ function checkAdminPassword() {
 
   if (password === correctPassword) {
     document.getElementById("adminSection").style.display = "block";
+    document.getElementById("welcomeMessage").textContent =
+      "Sveiki, Evaldai! Jūs sėkmingai prisijungėte ir galite pridėti naujas prekes!";
     document.getElementById("adminLogin").style.display = "none";
     message.textContent = "";
   } else {
@@ -122,7 +127,6 @@ function toggleLoginForm() {
   }
 }
 
-// Inventory page auto-load
 document.addEventListener("DOMContentLoaded", () => {
   const inventoryListDiv = document.getElementById("inventoryList");
   if (inventoryListDiv) {

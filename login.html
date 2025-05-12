@@ -20,7 +20,9 @@
       </div>
     </nav>
     <section class="interface">
-      <h3>Sveiki, Evaldai - prisijunkite, kad galėtumėte pridėti prekes</h3>
+      <h3 id="welcomeMessage">
+        Sveiki! Prisijunkite, kad galėtumėte pridėti prekes
+      </h3>
       <div id="adminLogin">
         <h3>Įveskite savo slaptažodį</h3>
         <input
@@ -45,6 +47,7 @@
           placeholder="Prekės kaina"
         />
         <button onclick="addItem()">Pridėti prekę</button>
+        <div id="newItemDisplay" class="inventoryItem"></div>
       </div>
     </section>
   </body>
