@@ -1,6 +1,37 @@
 const sheetURL =
   "https://script.google.com/macros/s/AKfycbxFPIFhk2KeIddQRdpjIrFP_FOaknrxeJxutdTR9CMslxwJbQ68p5hAwpQT8DZXkIq7/exec";
 
+// Barcode scanning function using html5-qrcode
+function startBarcodeScanner() {
+  const scannerDiv = document.getElementById("barcodeScanner");
+
+  // Initialize QR code scanner with camera
+  const html5QrCode = new Html5Qrcode("barcodeScanner");
+
+  // Start scanning
+  html5QrCode
+    .start(
+      { facingMode: "environment" }, // Camera facing environment (back camera)
+      {
+        fps: 10, // Frames per second
+        qrbox: 250, // The scanning box size
+      },
+      (decodedText, decodedResult) => {
+        // When a barcode is decoded, fill the barcode input with the scanned value
+        document.getElementById("adminBarcode").value = decodedText;
+        html5QrCode.stop(); // Stop the scanner after the barcode is scanned
+        document.getElementById("barcodeScanner").innerHTML = ""; // Clear scanner UI
+      },
+      (errorMessage) => {
+        // Optional: handle errors
+        console.log(errorMessage);
+      }
+    )
+    .catch((err) => {
+      console.log("Error starting the scanner: ", err);
+    });
+}
+
 function addItem() {
   const barcode = document.getElementById("adminBarcode").value.trim();
   const name = document.getElementById("itemName").value.trim();
@@ -66,6 +97,7 @@ function searchItem() {
     })
     .catch((err) => alert("Įvyko klaida: " + err));
 }
+
 function viewInventory() {
   const url = `${sheetURL}?search=`;
 
@@ -74,8 +106,6 @@ function viewInventory() {
     .then((data) => {
       const inventoryListDiv = document.getElementById("inventoryList");
       inventoryListDiv.innerHTML = "";
-
-      console.log(data);
 
       if (Array.isArray(data) && data.length > 0) {
         data.forEach((item) => {

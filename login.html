@@ -6,13 +6,15 @@
     <title>Kaštono parduotuvė</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="script.js"></script>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <!-- Barcode scanning library -->
   </head>
   <body>
     <nav class="navbar">
       <div class="navbar-container">
         <a href="index.html">
-          <div class="navbar-title">Kaštono Parduotuvė</div></a
-        >
+          <div class="navbar-title">Kaštono Parduotuvė</div>
+        </a>
         <div class="navbar-links">
           <a href="login.html">Prisijungimas</a>
           <a href="inventory.html">Prekių sąrašas</a>
@@ -38,6 +40,9 @@
 
       <div id="adminSection" style="display: none">
         <h3>Pridėti naują prekę</h3>
+        <button onclick="startBarcodeScanner()">Skanuoti barkodą</button>
+        <div id="barcodeScanner"></div>
+
         <input type="text" id="adminBarcode" placeholder="Barkodas" />
         <input type="text" id="itemName" placeholder="Prekės pavadinimas" />
         <input
