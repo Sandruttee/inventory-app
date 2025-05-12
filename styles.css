@@ -1,3 +1,12 @@
+:root {
+  --primary-color: #ff6600;
+  --secondary-color: #ddd9d6;
+  --text-color: #ffffff;
+  --background-color: #000000;
+  --card-background: #2d2a28;
+  --border-color: #5a5755;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -6,15 +15,15 @@
 
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f5f7;
-  color: #333;
+  background-color: var(--background-color);
+  color: var(--text-color);
   padding: 20px;
 }
 
 h2 {
   text-align: center;
   margin-bottom: 20px;
-  color: #222;
+  color: var(--text-color);
   font-size: 28px;
 }
 
@@ -27,13 +36,14 @@ h3 {
 #userSection,
 #adminLogin,
 #adminSection {
-  background: #ffffff;
+  background: var(--card-background);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
   margin: 0 auto 30px auto;
   max-width: 400px;
   width: 100%;
+  backdrop-filter: blur(10px); /* Glass effect */
 }
 
 #inventoryList {
@@ -43,11 +53,17 @@ h3 {
 }
 
 .inventoryItem {
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
   padding: 16px;
   margin-bottom: 12px;
   border-radius: 10px;
-  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+  backdrop-filter: blur(10px); /* Glass effect */
+}
+
+.inventoryItem:hover {
+  transform: scale(1.02);
 }
 
 input,
@@ -61,28 +77,26 @@ button {
 }
 
 input {
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   transition: border-color 0.3s;
 }
 
 input:focus {
-  border-color: #0077ff;
+  border-color: var(--primary-color);
   outline: none;
 }
 
 button {
-  background-color: #0077ff;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--text-color);
   border: none;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s;
-  max-width: 400px;
-  margin: 0 auto;
 }
 
 button:hover {
-  background-color: #005fcb;
+  background-color: #e65c00;
 }
 
 #result {
@@ -100,7 +114,46 @@ button:hover {
 hr {
   margin: 30px 0;
   border: none;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border-color);
+}
+
+.navbar {
+  width: 100%;
+  background-color: var(--primary-color);
+  padding: 12px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.navbar-container {
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-title {
+  font-size: 18px;
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 10px;
+}
+
+.container {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.inventoryItem strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-color);
 }
 
 @media (max-width: 420px) {
@@ -120,53 +173,4 @@ hr {
     font-size: 15px;
     padding: 10px;
   }
-}
-
-/* Navigation bar */
-.navbar {
-  width: 100%;
-  background-color: #1a73e8;
-  padding: 12px 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
-}
-
-/* Flex container for navbar items */
-.navbar-container {
-  max-width: 420px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Navbar title */
-.navbar-title {
-  font-size: 18px;
-  color: #ffffff;
-  font-weight: bold;
-}
-
-/* Navbar buttons container */
-.navbar-links {
-  display: flex;
-  gap: 10px;
-}
-
-/* Navbar buttons */
-.navbar-links button {
-  background-color: #ffffff;
-  color: #1a73e8;
-  border: none;
-  padding: 8px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
-}
-
-.navbar-links button:hover {
-  background-color: #e0e7ff;
-  color: #0b51c5;
 }

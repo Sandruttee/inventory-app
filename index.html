@@ -11,10 +11,12 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
       <div class="navbar-container">
-        <div class="navbar-title">📦 Kaštono Parduotuvė</div>
+        <a href="index.html">
+          <div class="navbar-title">📦 Kaštono Parduotuvė</div></a
+        >
         <div class="navbar-links">
           <a href="login.html">Prisijungimas</a>
-          <a href="inventory.html">Peržiūrėti prekes</a>
+          <a href="inventory.html">Prekių sąrašas</a>
         </div>
       </div>
     </nav>
@@ -29,39 +31,6 @@
       />
       <button onclick="searchItem()">Ieškoti prekių</button>
       <div id="result"></div>
-    </div>
-
-    <hr />
-
-    <!-- Inventory List (Initially Hidden) -->
-    <div id="inventoryList"></div>
-
-    <!-- Admin Login Form (Initially Hidden) -->
-    <div id="adminLogin">
-      <h3>Sveiki, Evaldai - prisijunkite, kad galėtumėte pridėti prekes</h3>
-      <input
-        type="password"
-        id="adminPassword"
-        placeholder="Įveskite savo slaptažodį"
-      />
-      <button onclick="checkAdminPassword()">
-        Paspauskite, kad prisijungtumėte
-      </button>
-      <div id="adminLoginMessage"></div>
-    </div>
-
-    <!-- Admin Section (Hidden Initially) -->
-    <div id="adminSection" style="display: none">
-      <h3>Pridėti naują prekę</h3>
-      <input type="text" id="adminBarcode" placeholder="Barkodas" />
-      <input type="text" id="itemName" placeholder="Prekės pavadinimas" />
-      <input
-        type="number"
-        step="0.01"
-        id="itemPrice"
-        placeholder="Prekės kaina"
-      />
-      <button onclick="addItem()">Pridėti prekę</button>
     </div>
   </body>
 </html>
