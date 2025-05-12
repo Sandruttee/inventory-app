@@ -125,3 +125,52 @@ hr {
     padding: 10px;
   }
 }
+
+/* Navigation bar */
+.navbar {
+  width: 100%;
+  background-color: #1a73e8;
+  padding: 12px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+/* Flex container for navbar items */
+.navbar-container {
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Navbar title */
+.navbar-title {
+  font-size: 18px;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* Navbar buttons container */
+.navbar-links {
+  display: flex;
+  gap: 10px;
+}
+
+/* Navbar buttons */
+.navbar-links button {
+  background-color: #ffffff;
+  color: #1a73e8;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.navbar-links button:hover {
+  background-color: #e0e7ff;
+  color: #0b51c5;
+}
