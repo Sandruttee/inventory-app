@@ -32,6 +32,34 @@ function startBarcodeScanner() {
     });
 }
 
+function startSearchScanner() {
+  const scannerDiv = document.getElementById("searchScanner");
+  scannerDiv.innerHTML = ""; // Clear any previous scanner
+
+  const html5QrCode = new Html5Qrcode("searchScanner");
+
+  html5QrCode
+    .start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: 250,
+      },
+      (decodedText) => {
+        document.getElementById("searchInput").value = decodedText;
+        html5QrCode.stop().then(() => {
+          scannerDiv.innerHTML = "";
+        });
+      },
+      (errorMessage) => {
+        console.warn("Scan error", errorMessage);
+      }
+    )
+    .catch((err) => {
+      console.error("Failed to start scanner", err);
+    });
+}
+
 function addItem() {
   const barcode = document.getElementById("adminBarcode").value.trim();
   const name = document.getElementById("itemName").value.trim();

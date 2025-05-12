@@ -1,33 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="lt">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kaštono parduotuvė</title>
     <link rel="stylesheet" href="styles.css" />
-    <script src="script.js"></script>
+
+    <script
+      src="https://unpkg.com/html5-qrcode"
+      type="text/javascript"
+    ></script>
+
+    <script src="script.js" defer></script>
   </head>
   <body>
     <nav class="navbar">
       <div class="navbar-container">
         <a href="index.html">
-          <div class="navbar-title">Kaštono Parduotuvė</div></a
-        >
+          <div class="navbar-title">Kaštono Parduotuvė</div>
+        </a>
         <div class="navbar-links">
           <a href="login.html">Prisijungimas</a>
           <a href="inventory.html">Prekių sąrašas</a>
         </div>
       </div>
     </nav>
+
     <section class="interface">
       <div id="userSection">
         <h3>Prekių paieška</h3>
+
         <input
           type="text"
           id="searchInput"
           placeholder="Įveskite barkodą arba prekės pavadinimą"
         />
         <button onclick="searchItem()">Ieškoti prekių</button>
+
+        <button onclick="startSearchScanner()">Skenuoti barkodą</button>
+
+        <div id="searchScanner" style="width: 300px; margin-top: 10px"></div>
+
         <div id="result"></div>
       </div>
     </section>
