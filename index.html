@@ -8,11 +8,10 @@
     <script src="script.js"></script>
   </head>
   <body>
-    <!-- Navigation Bar -->
     <nav class="navbar">
       <div class="navbar-container">
         <a href="index.html">
-          <div class="navbar-title">📦 Kaštono Parduotuvė</div></a
+          <div class="navbar-title">Kaštono Parduotuvė</div></a
         >
         <div class="navbar-links">
           <a href="login.html">Prisijungimas</a>
@@ -20,17 +19,17 @@
         </div>
       </div>
     </nav>
-
-    <!-- User Section (Search) -->
-    <div id="userSection">
-      <h3>Prekių paieška</h3>
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Įveskite barkodą arba prekės pavadinimą"
-      />
-      <button onclick="searchItem()">Ieškoti prekių</button>
-      <div id="result"></div>
-    </div>
+    <section class="interface">
+      <div id="userSection">
+        <h3>Prekių paieška</h3>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Įveskite barkodą arba prekės pavadinimą"
+        />
+        <button onclick="searchItem()">Ieškoti prekių</button>
+        <div id="result"></div>
+      </div>
+    </section>
   </body>
 </html>
