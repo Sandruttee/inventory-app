@@ -1,29 +1,24 @@
 const sheetURL =
   "https://script.google.com/macros/s/AKfycbxFPIFhk2KeIddQRdpjIrFP_FOaknrxeJxutdTR9CMslxwJbQ68p5hAwpQT8DZXkIq7/exec";
 
-// Barcode scanning function using html5-qrcode
 function startBarcodeScanner() {
   const scannerDiv = document.getElementById("barcodeScanner");
 
-  // Initialize QR code scanner with camera
   const html5QrCode = new Html5Qrcode("barcodeScanner");
 
-  // Start scanning
   html5QrCode
     .start(
-      { facingMode: "environment" }, // Camera facing environment (back camera)
+      { facingMode: "environment" },
       {
-        fps: 10, // Frames per second
-        qrbox: 250, // The scanning box size
+        fps: 10,
+        qrbox: 250,
       },
       (decodedText, decodedResult) => {
-        // When a barcode is decoded, fill the barcode input with the scanned value
         document.getElementById("adminBarcode").value = decodedText;
-        html5QrCode.stop(); // Stop the scanner after the barcode is scanned
-        document.getElementById("barcodeScanner").innerHTML = ""; // Clear scanner UI
+        html5QrCode.stop();
+        document.getElementById("barcodeScanner").innerHTML = "";
       },
       (errorMessage) => {
-        // Optional: handle errors
         console.log(errorMessage);
       }
     )
@@ -34,7 +29,7 @@ function startBarcodeScanner() {
 
 function startSearchScanner() {
   const scannerDiv = document.getElementById("searchScanner");
-  scannerDiv.innerHTML = ""; // Clear any previous scanner
+  scannerDiv.innerHTML = "";
 
   const html5QrCode = new Html5Qrcode("searchScanner");
 
@@ -157,7 +152,7 @@ function viewInventory() {
 
 function checkAdminPassword() {
   const password = document.getElementById("adminPassword").value;
-  const correctPassword = "letmein"; // change this to your own secret
+  const correctPassword = "ananasas"; // change this to your own secret
 
   const message = document.getElementById("adminLoginMessage");
 
