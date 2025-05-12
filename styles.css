@@ -36,10 +36,6 @@ h3 {
   width: 100%;
 }
 
-#adminLogin {
-  display: none;
-}
-
 #inventoryList {
   max-width: 400px;
   margin: 0 auto;

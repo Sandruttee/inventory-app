@@ -121,3 +121,37 @@ function toggleLoginForm() {
     adminLoginForm.style.display = "none";
   }
 }
+
+// Inventory page auto-load
+document.addEventListener("DOMContentLoaded", () => {
+  const inventoryListDiv = document.getElementById("inventoryList");
+  if (inventoryListDiv) {
+    fetch(`${sheetURL}?search=`)
+      .then((res) => res.json())
+      .then((data) => {
+        inventoryListDiv.innerHTML = "";
+
+        if (Array.isArray(data) && data.length > 0) {
+          data.forEach((item) => {
+            const div = document.createElement("div");
+            div.classList.add("inventoryItem");
+            div.innerHTML = `
+              <strong>Barkodas:</strong> ${item.barcode}<br>
+              <strong>Prekės pavadinimas:</strong> ${item.name}<br>
+              <strong>Prekės kaina:</strong> $${parseFloat(item.price).toFixed(
+                2
+              )}
+              <hr />
+            `;
+            inventoryListDiv.appendChild(div);
+          });
+        } else {
+          inventoryListDiv.textContent = "Nėra jokių prekių.";
+        }
+      })
+      .catch((err) => {
+        inventoryListDiv.textContent = "Klaida įkeliant prekes.";
+        console.error(err);
+      });
+  }
+});
