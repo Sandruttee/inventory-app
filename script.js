@@ -1,3 +1,4 @@
+// Airtable & Imgur config (Imgur code remains but not used for data-URL flow)
 const AIRTABLE_TOKEN =
   "patonUvamdRdkFxP4.0b7f2afa1a2904535300554448fb1389baaa22d5d89c782a6f2d1b7cac5ccd2e";
 const AIRTABLE_BASE_ID = "appJUgj3fq2c2Wr7v";
@@ -6,10 +7,13 @@ const airtableURL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURI
   AIRTABLE_TABLE_NAME
 )}`;
 
-const IMGUR_CLIENT_ID = "4cffdea63f8e0fb";
+const IMGUR_CLIENT_ID = "4cffdea63f8e0fb"; // retained but not used
 
+// ─── NEW GLOBAL for data-URL ─────────────────────────────────────────────
 let cameraStream = null;
 let photoBlob = null;
+let photoDataUrl = "";
+// ───────────────────────────────────────────────────────────────────────────
 
 function openCamera() {
   const openBtn = document.getElementById("openCameraButton");
@@ -44,14 +48,16 @@ function capturePhoto() {
   canvas.height = video.videoHeight;
   const ctx = canvas.getContext("2d");
   ctx.drawImage(video, 0, 0);
-  canvas.toBlob((blob) => {
-    photoBlob = blob;
 
-    const imgPreview = document.getElementById("photoPreview");
-    imgPreview.src = URL.createObjectURL(blob);
-    imgPreview.style.display = "block";
-  }, "image/jpeg");
+  // Convert to base64 data-URL and store globally
+  photoDataUrl = canvas.toDataURL("image/jpeg", 0.7);
 
+  // Show preview immediately using data URL
+  const imgPreview = document.getElementById("photoPreview");
+  imgPreview.src = photoDataUrl;
+  imgPreview.style.display = "block";
+
+  // Stop camera
   if (cameraStream) {
     cameraStream.getTracks().forEach((t) => t.stop());
     cameraStream = null;
@@ -92,55 +98,10 @@ function startSearchScanner() {
 }
 
 /**
- * Uploads a Blob to Imgur anonymously and returns the public URL.
- * @param {Blob} blob – the image blob from canvas.toBlob
- * @returns {Promise<string>} – the Imgur URL of the uploaded image
- */
-async function uploadToImgur(blob) {
-  const form = new FormData();
-  form.append("image", blob);
-
-  const res = await fetch("https://api.imgur.com/3/image", {
-    method: "POST",
-    headers: { Authorization: `Client-ID ${IMGUR_CLIENT_ID}` },
-    body: form,
-  });
-
-  const json = await res.json();
-  if (!res.ok || !json.success) {
-    throw new Error(
-      json.data?.error || `Imgur upload failed: HTTP ${res.status}`
-    );
-  }
-  return json.data.link; // e.g. "https://i.imgur.com/abcd1234.jpg"
-}
-/**
- * Uploads a Blob to Imgur anonymously and returns its public URL.
- */
-async function uploadToImgur(blob) {
-  const form = new FormData();
-  form.append("image", blob);
-
-  const res = await fetch("https://api.imgur.com/3/image", {
-    method: "POST",
-    headers: { Authorization: `Client-ID ${IMGUR_CLIENT_ID}` },
-    body: form,
-  });
-  const json = await res.json();
-  if (!res.ok || !json.success) {
-    throw new Error(
-      json.data?.error || `Imgur upload failed: HTTP ${res.status}`
-    );
-  }
-  return json.data.link; // e.g. "https://i.imgur.com/abcd1234.jpg"
-}
-
-/**
  * Adds a new inventory item:
  * 1) Creates a record in Airtable (no image)
- * 2) Uploads photoBlob to Imgur
- * 3) Patches the Airtable record's Image URL field
- * 4) Renders the result and cleans up
+ * 2) Stores base64 data-URL in "Image URL" field
+ * 3) Renders the result and cleans up
  */
 async function addItem() {
   // 0) Grab & validate inputs
@@ -153,7 +114,7 @@ async function addItem() {
   }
 
   try {
-    // 1) Create Airtable record (no image yet)
+    // 1) Create Airtable record, include data-URL
     const createRes = await fetch(airtableURL, {
       method: "POST",
       headers: {
@@ -165,6 +126,7 @@ async function addItem() {
           Barcode: barcode,
           "Product name": name,
           Price: parseFloat(price),
+          "Image URL": photoDataUrl,
         },
       }),
     });
@@ -173,58 +135,23 @@ async function addItem() {
       throw new Error(createData.error?.message || `HTTP ${createRes.status}`);
     }
 
-    // Grab the new record’s ID
-    const recordId = Array.isArray(createData.records)
-      ? createData.records[0].id
-      : createData.id;
-
-    let publicUrl = "";
-
-    // 2) If a photo was captured, upload to Imgur
-    if (photoBlob) {
-      publicUrl = await uploadToImgur(photoBlob);
-
-      // 3) PATCH the record’s Image URL field with the Imgur link
-      const patchRes = await fetch(`${airtableURL}/${recordId}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fields: {
-            "Image URL": publicUrl,
-          },
-        }),
-      });
-      const patchData = await patchRes.json();
-      if (!patchRes.ok) {
-        throw new Error(
-          patchData.error?.message || `Patch failed: ${patchRes.status}`
-        );
-      }
-    }
-
-    // 4) Render success UI (show the uploaded image)
+    // 2) Render success UI (using the same data URL)
     const resultDiv = document.getElementById("newItemDisplay");
     let html = `<h3>Prekė sėkmingai pridėta:</h3>
       <strong>Barkodas:</strong> ${barcode}<br>
       <strong>Prekės pavadinimas:</strong> ${name}<br>
       <strong>Kaina:</strong> $${parseFloat(price).toFixed(2)}<br>`;
-    if (publicUrl) {
-      html += `<img
-        src="${publicUrl}"
-        alt="Product image"
-        style="max-width:100%;margin-top:10px;"
-      />`;
+    if (photoDataUrl) {
+      html += `<img src="${photoDataUrl}" alt="Product image" style="max-width:100%;margin-top:10px;">`;
     }
     resultDiv.innerHTML = html;
 
-    // 5) Cleanup form/UI
+    // 3) Cleanup form/UI
     ["adminBarcode", "itemName", "itemPrice"].forEach(
       (id) => (document.getElementById(id).value = "")
     );
     photoBlob = null;
+    photoDataUrl = "";
     document.getElementById("photoPreview").style.display = "none";
     document.getElementById("openCameraButton").style.display = "inline-block";
   } catch (err) {
@@ -244,35 +171,31 @@ function searchItem() {
   );
   const url = `${airtableURL}?filterByFormula=${filter}`;
 
-  fetch(url, {
-    headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
-  })
+  fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } })
     .then((res) => res.json())
     .then((data) => {
       const detailsDiv = document.getElementById("resultDetails");
       const imgElem = document.getElementById("searchResultImage");
 
-      if (data.records && data.records.length) {
-        const item = data.records[0].fields;
+      detailsDiv.textContent = "";
+      imgElem.style.display = "none";
+      imgElem.removeAttribute("src");
 
-        // render text details
-        detailsDiv.innerHTML = `
-          <strong>Barkodas:</strong> ${item.Barcode}<br>
-          <strong>Prekės pavadinimas:</strong> ${item["Product name"]}<br>
-          <strong>Prekės kaina:</strong> $${item.Price.toFixed(2)}<br>
-        `;
-
-        // render image if URL exists
-        if (item["Image URL"]) {
-          imgElem.src = item["Image URL"];
-          imgElem.style.display = "block";
-        } else {
-          imgElem.style.display = "none";
-        }
-      } else {
-        // no match
+      if (!data.records || !data.records.length) {
         detailsDiv.textContent = "Prekė nerasta";
-        imgElem.style.display = "none";
+        return;
+      }
+
+      const item = data.records[0].fields;
+      detailsDiv.innerHTML = `
+        <strong>Barkodas:</strong> ${item.Barcode}<br>
+        <strong>Prekės pavadinimas:</strong> ${item["Product name"]}<br>
+        <strong>Prekės kaina:</strong> $${item.Price.toFixed(2)}<br>
+      `;
+
+      if (item["Image URL"]) {
+        imgElem.src = item["Image URL"];
+        imgElem.style.display = "block";
       }
     })
     .catch((err) => alert("Įvyko klaida: " + err));
