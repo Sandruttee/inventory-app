@@ -1,3 +1,12 @@
+const AIRTABLE_TOKEN =
+  "patxoFEwtfYJKDwEF.9023c1ad63b49a429aa9538e0b96db32d7c77f74b4fda650896d00600b414fbe";
+const AIRTABLE_BASE_ID = "appJUgj3fq2c2Wr7v";
+const AIRTABLE_TABLE_NAME = "Table 1";
+
+const airtableURL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+  AIRTABLE_TABLE_NAME
+)}`;
+
 let cameraStream = null;
 let photoBlob = null;
 
