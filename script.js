@@ -1,11 +1,12 @@
 const AIRTABLE_TOKEN =
-  "patZ6TKpBfRZ4No0E.39659757f007c4d9c89f698bf7583f4b4b2547b267e7560624345072a9afc4ff";
+  "patonUvamdRdkFxP4.0b7f2afa1a2904535300554448fb1389baaa22d5d89c782a6f2d1b7cac5ccd2e";
 const AIRTABLE_BASE_ID = "appJUgj3fq2c2Wr7v";
 const AIRTABLE_TABLE_NAME = "Table 1";
-
 const airtableURL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
   AIRTABLE_TABLE_NAME
 )}`;
+
+const IMGUR_CLIENT_ID = "4cffdea63f8e0fb";
 
 let cameraStream = null;
 let photoBlob = null;
@@ -90,8 +91,32 @@ function startSearchScanner() {
     .catch((err) => console.error("Error starting scanner", err));
 }
 
+/**
+ * Uploads a Blob to Imgur anonymously and returns the public URL.
+ * @param {Blob} blob – the image blob from canvas.toBlob
+ * @returns {Promise<string>} – the Imgur URL of the uploaded image
+ */
+async function uploadToImgur(blob) {
+  const form = new FormData();
+  form.append("image", blob);
+
+  const res = await fetch("https://api.imgur.com/3/image", {
+    method: "POST",
+    headers: { Authorization: `Client-ID ${IMGUR_CLIENT_ID}` },
+    body: form,
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(
+      json.data?.error || `Imgur upload failed: HTTP ${res.status}`
+    );
+  }
+  return json.data.link; // e.g. "https://i.imgur.com/abcd1234.jpg"
+}
+
 async function addItem() {
-  // 0) grab & validate
+  // 0) grab & validate inputs
   const barcode = document.getElementById("adminBarcode").value.trim();
   const name = document.getElementById("itemName").value.trim();
   const price = document.getElementById("itemPrice").value.trim();
@@ -101,7 +126,7 @@ async function addItem() {
   }
 
   try {
-    // 1) create record (no attachment)
+    // 1) Create Airtable record (no attachment yet)
     const createRes = await fetch(airtableURL, {
       method: "POST",
       headers: {
@@ -117,40 +142,22 @@ async function addItem() {
       }),
     });
     const createData = await createRes.json();
-    if (!createRes.ok) {
-      throw new Error(createData.error?.message || `HTTP ${createRes.status}`);
-    }
+    if (!createRes.ok)
+      throw new Error(createData.error?.message || createRes.status);
 
-    // normalize single vs. wrapped response
+    // Normalize single vs. array response
     const record = Array.isArray(createData.records)
       ? createData.records[0]
       : createData;
     const recordId = record.id;
     let attachments = record.fields?.Attachments || [];
 
-    // 2) upload the blob (if any)
+    // 2) If there’s a photoBlob, upload it to Imgur, then PATCH Airtable
     if (photoBlob) {
-      // 2a) send raw file to AttachmentUploads
-      const uploadRes = await fetch(
-        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/AttachmentUploads`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
-          body: (() => {
-            const f = new FormData();
-            f.append("file", photoBlob, "photo.jpg");
-            return f;
-          })(),
-        }
-      );
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) {
-        throw new Error(
-          uploadData.error?.message || `Upload failed: HTTP ${uploadRes.status}`
-        );
-      }
+      // 2a) Upload to Imgur
+      const publicUrl = await uploadToImgur(photoBlob);
 
-      // 2b) patch your record’s Attachments field with that upload ID
+      // 2b) PATCH the Airtable record’s Attachments field
       const patchRes = await fetch(`${airtableURL}/${recordId}`, {
         method: "PATCH",
         headers: {
@@ -158,32 +165,34 @@ async function addItem() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          fields: { Attachments: [{ id: uploadData.id }] },
+          fields: {
+            Attachments: [{ url: publicUrl, filename: "photo.jpg" }],
+          },
         }),
       });
       const patchData = await patchRes.json();
-      if (!patchRes.ok) {
-        throw new Error(
-          patchData.error?.message || `Patch failed: HTTP ${patchRes.status}`
-        );
-      }
+      if (!patchRes.ok)
+        throw new Error(patchData.error?.message || patchRes.status);
+
       attachments = patchData.records?.[0]?.fields?.Attachments || [];
     }
 
-    // 3) render
+    // 3) Render success UI
     const resultDiv = document.getElementById("newItemDisplay");
     let html = `<h3>Prekė sėkmingai pridėta:</h3>
       <strong>Barkodas:</strong> ${barcode}<br>
       <strong>Prekės pavadinimas:</strong> ${name}<br>
       <strong>Kaina:</strong> $${parseFloat(price).toFixed(2)}<br>`;
     if (attachments.length) {
-      html += `<img src="${attachments[0].url}"
-                    alt="Product image"
-                    style="max-width:100%;margin-top:10px;">`;
+      html += `<img
+        src="${attachments[0].url}"
+        alt="Product image"
+        style="max-width:100%;margin-top:10px;"
+      />`;
     }
     resultDiv.innerHTML = html;
 
-    // 4) cleanup
+    // 4) Cleanup form/UI
     ["adminBarcode", "itemName", "itemPrice"].forEach(
       (id) => (document.getElementById(id).value = "")
     );
