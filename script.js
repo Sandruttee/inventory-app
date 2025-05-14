@@ -1,5 +1,3 @@
-// Airtable configuration - replace with your details
-// As of Feb 1, 2024, use a Personal Access Token (PAT) instead of the deprecated API key
 const AIRTABLE_TOKEN =
   "patxoFEwtfYJKDwEF.9023c1ad63b49a429aa9538e0b96db32d7c77f74b4fda650896d00600b414fbe";
 const AIRTABLE_BASE_ID = "appJUgj3fq2c2Wr7v";
@@ -9,7 +7,6 @@ const airtableURL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURI
   AIRTABLE_TABLE_NAME
 )}`;
 
-// === Scanner functions (unchanged) ===
 function startBarcodeScanner() {
   const scannerDiv = document.getElementById("barcodeScanner");
   const html5QrCode = new Html5Qrcode("barcodeScanner");
@@ -57,7 +54,6 @@ function startSearchScanner() {
     });
 }
 
-// === Admin: Add new item ===
 function addItem() {
   const barcode = document.getElementById("adminBarcode").value.trim();
   const name = document.getElementById("itemName").value.trim();
@@ -105,7 +101,6 @@ function addItem() {
     .catch((err) => alert("Įvyko klaida: " + err));
 }
 
-// === Search for an item ===
 function searchItem() {
   const input = document.getElementById("searchInput").value.trim();
   if (!input) {
@@ -140,7 +135,6 @@ function searchItem() {
     .catch((err) => alert("Įvyko klaida: " + err));
 }
 
-// === View full inventory ===
 function viewInventory() {
   fetch(`${airtableURL}?view=Grid%20view`, {
     headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
@@ -173,7 +167,6 @@ function viewInventory() {
     });
 }
 
-// === Admin login and helpers (unchanged) ===
 function checkAdminPassword() {
   const password = document.getElementById("adminPassword").value;
   const correctPassword = "ananasas";
