@@ -1,5 +1,5 @@
 const AIRTABLE_TOKEN =
-  "patxoFEwtfYJKDwEF.9023c1ad63b49a429aa9538e0b96db32d7c77f74b4fda650896d00600b414fbe";
+  "patZ6TKpBfRZ4No0E.39659757f007c4d9c89f698bf7583f4b4b2547b267e7560624345072a9afc4ff";
 const AIRTABLE_BASE_ID = "appJUgj3fq2c2Wr7v";
 const AIRTABLE_TABLE_NAME = "Table 1";
 
@@ -90,68 +90,109 @@ function startSearchScanner() {
     .catch((err) => console.error("Error starting scanner", err));
 }
 
-function addItem() {
+async function addItem() {
+  // 0) grab & validate
   const barcode = document.getElementById("adminBarcode").value.trim();
   const name = document.getElementById("itemName").value.trim();
   const price = document.getElementById("itemPrice").value.trim();
-
   if (!barcode || !name || !price) {
     alert("Reikia užpildyti visus laukelius");
     return;
   }
 
-  const headers = { Authorization: `Bearer ${AIRTABLE_TOKEN}` };
-  let options;
-
-  if (photoBlob) {
-    const formData = new FormData();
-    formData.append("fields[Barcode]", barcode);
-    formData.append("fields[Product name]", name);
-    formData.append("fields[Price]", parseFloat(price));
-    formData.append("fields[Attachments][]", photoBlob, "photo.jpg");
-    options = { method: "POST", headers, body: formData };
-  } else {
-    headers["Content-Type"] = "application/json";
-    const fields = {
-      Barcode: barcode,
-      "Product name": name,
-      Price: parseFloat(price),
-    };
-    options = {
+  try {
+    // 1) create record (no attachment)
+    const createRes = await fetch(airtableURL, {
       method: "POST",
-      headers,
-      body: JSON.stringify({ records: [{ fields }] }),
-    };
-  }
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fields: {
+          Barcode: barcode,
+          "Product name": name,
+          Price: parseFloat(price),
+        },
+      }),
+    });
+    const createData = await createRes.json();
+    if (!createRes.ok) {
+      throw new Error(createData.error?.message || `HTTP ${createRes.status}`);
+    }
 
-  fetch(airtableURL, options)
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.error) {
-        alert(`Įvyko klaida: ${data.error.message}`);
-        return;
-      }
-      const item = data.records[0].fields;
-      const resultDiv = document.getElementById("newItemDisplay");
-      let html = `<h3>Prekė sėkmingai pridėta:</h3>
-        <strong>Barkodas:</strong> ${item.Barcode}<br>
-        <strong>Prekės pavadinimas:</strong> ${item["Product name"]}<br>
-        <strong>Prekės kaina:</strong> $${item.Price.toFixed(2)}<br>`;
-      if (item.Attachments && item.Attachments.length) {
-        html += `<img src="${item.Attachments[0].url}" alt="Product image" style="max-width:100%;margin-top:10px;"/>`;
-      }
-      resultDiv.innerHTML = html;
+    // normalize single vs. wrapped response
+    const record = Array.isArray(createData.records)
+      ? createData.records[0]
+      : createData;
+    const recordId = record.id;
+    let attachments = record.fields?.Attachments || [];
 
-      ["adminBarcode", "itemName", "itemPrice"].forEach(
-        (id) => (document.getElementById(id).value = "")
+    // 2) upload the blob (if any)
+    if (photoBlob) {
+      // 2a) send raw file to AttachmentUploads
+      const uploadRes = await fetch(
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/AttachmentUploads`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
+          body: (() => {
+            const f = new FormData();
+            f.append("file", photoBlob, "photo.jpg");
+            return f;
+          })(),
+        }
       );
-      photoBlob = null;
-      document.getElementById("photoPreview").style.display = "none";
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) {
+        throw new Error(
+          uploadData.error?.message || `Upload failed: HTTP ${uploadRes.status}`
+        );
+      }
 
-      const openBtn = document.getElementById("openCameraButton");
-      if (openBtn) openBtn.style.display = "inline-block";
-    })
-    .catch((err) => alert("Įvyko klaida: " + err));
+      // 2b) patch your record’s Attachments field with that upload ID
+      const patchRes = await fetch(`${airtableURL}/${recordId}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fields: { Attachments: [{ id: uploadData.id }] },
+        }),
+      });
+      const patchData = await patchRes.json();
+      if (!patchRes.ok) {
+        throw new Error(
+          patchData.error?.message || `Patch failed: HTTP ${patchRes.status}`
+        );
+      }
+      attachments = patchData.records?.[0]?.fields?.Attachments || [];
+    }
+
+    // 3) render
+    const resultDiv = document.getElementById("newItemDisplay");
+    let html = `<h3>Prekė sėkmingai pridėta:</h3>
+      <strong>Barkodas:</strong> ${barcode}<br>
+      <strong>Prekės pavadinimas:</strong> ${name}<br>
+      <strong>Kaina:</strong> $${parseFloat(price).toFixed(2)}<br>`;
+    if (attachments.length) {
+      html += `<img src="${attachments[0].url}"
+                    alt="Product image"
+                    style="max-width:100%;margin-top:10px;">`;
+    }
+    resultDiv.innerHTML = html;
+
+    // 4) cleanup
+    ["adminBarcode", "itemName", "itemPrice"].forEach(
+      (id) => (document.getElementById(id).value = "")
+    );
+    photoBlob = null;
+    document.getElementById("photoPreview").style.display = "none";
+    document.getElementById("openCameraButton").style.display = "inline-block";
+  } catch (err) {
+    alert(`Įvyko klaida: ${err.message}`);
+  }
 }
 
 function searchItem() {
