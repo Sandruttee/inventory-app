@@ -15,6 +15,11 @@ function openCamera() {
     .then((stream) => {
       cameraStream = stream;
       video.srcObject = stream;
+
+      video.muted = true;
+      video.playsInline = true;
+      return video.play();
+
       video.style.display = "block";
       document.getElementById("captureButton").style.display = "inline-block";
     })
