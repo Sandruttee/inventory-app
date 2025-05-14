@@ -114,9 +114,36 @@ async function uploadToImgur(blob) {
   }
   return json.data.link; // e.g. "https://i.imgur.com/abcd1234.jpg"
 }
+/**
+ * Uploads a Blob to Imgur anonymously and returns its public URL.
+ */
+async function uploadToImgur(blob) {
+  const form = new FormData();
+  form.append("image", blob);
 
+  const res = await fetch("https://api.imgur.com/3/image", {
+    method: "POST",
+    headers: { Authorization: `Client-ID ${IMGUR_CLIENT_ID}` },
+    body: form,
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(
+      json.data?.error || `Imgur upload failed: HTTP ${res.status}`
+    );
+  }
+  return json.data.link; // e.g. "https://i.imgur.com/abcd1234.jpg"
+}
+
+/**
+ * Adds a new inventory item:
+ * 1) Creates a record in Airtable (no image)
+ * 2) Uploads photoBlob to Imgur
+ * 3) Patches the Airtable record's Image URL field
+ * 4) Renders the result and cleans up
+ */
 async function addItem() {
-  // 0) grab & validate inputs
+  // 0) Grab & validate inputs
   const barcode = document.getElementById("adminBarcode").value.trim();
   const name = document.getElementById("itemName").value.trim();
   const price = document.getElementById("itemPrice").value.trim();
@@ -126,7 +153,7 @@ async function addItem() {
   }
 
   try {
-    // 1) Create Airtable record (no attachment yet)
+    // 1) Create Airtable record (no image yet)
     const createRes = await fetch(airtableURL, {
       method: "POST",
       headers: {
@@ -142,22 +169,22 @@ async function addItem() {
       }),
     });
     const createData = await createRes.json();
-    if (!createRes.ok)
-      throw new Error(createData.error?.message || createRes.status);
+    if (!createRes.ok) {
+      throw new Error(createData.error?.message || `HTTP ${createRes.status}`);
+    }
 
-    // Normalize single vs. array response
-    const record = Array.isArray(createData.records)
-      ? createData.records[0]
-      : createData;
-    const recordId = record.id;
-    let attachments = record.fields?.Attachments || [];
+    // Grab the new record’s ID
+    const recordId = Array.isArray(createData.records)
+      ? createData.records[0].id
+      : createData.id;
 
-    // 2) If there’s a photoBlob, upload it to Imgur, then PATCH Airtable
+    let publicUrl = "";
+
+    // 2) If a photo was captured, upload to Imgur
     if (photoBlob) {
-      // 2a) Upload to Imgur
-      const publicUrl = await uploadToImgur(photoBlob);
+      publicUrl = await uploadToImgur(photoBlob);
 
-      // 2b) PATCH the Airtable record’s Attachments field
+      // 3) PATCH the record’s Image URL field with the Imgur link
       const patchRes = await fetch(`${airtableURL}/${recordId}`, {
         method: "PATCH",
         headers: {
@@ -166,33 +193,34 @@ async function addItem() {
         },
         body: JSON.stringify({
           fields: {
-            Attachments: [{ url: publicUrl, filename: "photo.jpg" }],
+            "Image URL": publicUrl,
           },
         }),
       });
       const patchData = await patchRes.json();
-      if (!patchRes.ok)
-        throw new Error(patchData.error?.message || patchRes.status);
-
-      attachments = patchData.records?.[0]?.fields?.Attachments || [];
+      if (!patchRes.ok) {
+        throw new Error(
+          patchData.error?.message || `Patch failed: ${patchRes.status}`
+        );
+      }
     }
 
-    // 3) Render success UI
+    // 4) Render success UI (show the uploaded image)
     const resultDiv = document.getElementById("newItemDisplay");
     let html = `<h3>Prekė sėkmingai pridėta:</h3>
       <strong>Barkodas:</strong> ${barcode}<br>
       <strong>Prekės pavadinimas:</strong> ${name}<br>
       <strong>Kaina:</strong> $${parseFloat(price).toFixed(2)}<br>`;
-    if (attachments.length) {
+    if (publicUrl) {
       html += `<img
-        src="${attachments[0].url}"
+        src="${publicUrl}"
         alt="Product image"
         style="max-width:100%;margin-top:10px;"
       />`;
     }
     resultDiv.innerHTML = html;
 
-    // 4) Cleanup form/UI
+    // 5) Cleanup form/UI
     ["adminBarcode", "itemName", "itemPrice"].forEach(
       (id) => (document.getElementById(id).value = "")
     );
@@ -210,25 +238,41 @@ function searchItem() {
     alert("Užpildykite paieškos laukelį");
     return;
   }
+
   const filter = encodeURIComponent(
     `OR({Barcode}="${input}", FIND("${input}", {Product name}))`
   );
   const url = `${airtableURL}?filterByFormula=${filter}`;
-  fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } })
+
+  fetch(url, {
+    headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
+  })
     .then((res) => res.json())
     .then((data) => {
-      const resultDiv = document.getElementById("result");
+      const detailsDiv = document.getElementById("resultDetails");
+      const imgElem = document.getElementById("searchResultImage");
+
       if (data.records && data.records.length) {
         const item = data.records[0].fields;
-        let html = `<strong>Barkodas:</strong> ${item.Barcode}<br>
+
+        // render text details
+        detailsDiv.innerHTML = `
+          <strong>Barkodas:</strong> ${item.Barcode}<br>
           <strong>Prekės pavadinimas:</strong> ${item["Product name"]}<br>
-          <strong>Prekės kaina:</strong> $${item.Price.toFixed(2)}<br>`;
-        if (item.Attachments && item.Attachments.length) {
-          html += `<img src="${item.Attachments[0].url}" alt="Product image" style="max-width:100%;margin-top:10px;"/>`;
+          <strong>Prekės kaina:</strong> $${item.Price.toFixed(2)}<br>
+        `;
+
+        // render image if URL exists
+        if (item["Image URL"]) {
+          imgElem.src = item["Image URL"];
+          imgElem.style.display = "block";
+        } else {
+          imgElem.style.display = "none";
         }
-        resultDiv.innerHTML = html;
       } else {
-        resultDiv.textContent = "Prekė nerasta";
+        // no match
+        detailsDiv.textContent = "Prekė nerasta";
+        imgElem.style.display = "none";
       }
     })
     .catch((err) => alert("Įvyko klaida: " + err));
