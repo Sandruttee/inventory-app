@@ -52,9 +52,16 @@
           id="itemPrice"
           placeholder="Prekės kaina"
         />
-        <button type="button" onclick="openCamera()">Open Camera</button>
+
+        <button id="openCameraButton" type="button" onclick="openCamera()">
+          Open Camera
+        </button>
+
         <video
           id="cameraPreview"
+          autoplay
+          muted
+          playsinline
           style="display: none; width: 100%; max-width: 300px"
         ></video>
         <button
