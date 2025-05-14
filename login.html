@@ -52,6 +52,24 @@
           id="itemPrice"
           placeholder="Prekės kaina"
         />
+        <button type="button" onclick="openCamera()">Open Camera</button>
+        <video
+          id="cameraPreview"
+          style="display: none; width: 100%; max-width: 300px"
+        ></video>
+        <button
+          type="button"
+          id="captureButton"
+          onclick="capturePhoto()"
+          style="display: none"
+        >
+          Capture Photo
+        </button>
+        <img
+          id="photoPreview"
+          style="display: none; width: 100%; max-width: 300px; margin-top: 1rem"
+        />
+
         <button onclick="addItem()">Pridėti prekę</button>
         <div id="newItemDisplay" class="inventoryItem"></div>
       </div>
