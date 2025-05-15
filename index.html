@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="lt">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kaštono parduotuvė</title>
+    <title>Item search</title>
     <link rel="stylesheet" href="styles.css" />
 
     <script
@@ -17,25 +17,26 @@
     <nav class="navbar">
       <div class="navbar-container">
         <a href="index.html">
-          <div class="navbar-title">Kaštono Parduotuvė</div>
+          <div class="navbar-title">Item search</div>
         </a>
         <div class="navbar-links">
-          <a href="login.html">Prisijungimas</a>
-          <a href="inventory.html">Prekių sąrašas</a>
+          <a href="login.html">Add an item</a>
+          <a href="inventory.html">Inventory list</a>
         </div>
       </div>
     </nav>
 
     <section class="interface">
       <div id="userSection">
-        <h3>Prekių paieška</h3>
+        <h3>Item search</h3>
         <input
           type="text"
           id="searchInput"
-          placeholder="Įveskite barkodą arba prekės pavadinimą"
+          placeholder="Barcode or item name"
         />
-        <button onclick="searchItem()">Ieškoti prekių</button>
-        <button onclick="startSearchScanner()">Skenuoti barkodą</button>
+
+        <button onclick="startSearchScanner()">Scan a barcode</button>
+        <button onclick="searchItem()">Find an item</button>
         <div id="searchScanner" style="width: 300px; margin-top: 10px"></div>
 
         <div id="result">
